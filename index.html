@@ -1,118 +1,212 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Cyber Snake</title>
+    <title>Змейка</title>
     <style>
         body {
             text-align: center;
-            font-family: 'Courier New', monospace;
-            background: #0a0f0d;
-            color: #00ff99;
+            font-family: 'Arial', sans-serif;
+            background: #121212;
+            color: #ffffff;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        canvas {
-            background: #02110d;
-            display: block;
-            margin: auto;
-            border-radius: 10px;
-            box-shadow: 0 0 15px #00ff99;
+
+        #score-container {
+            margin-top: 20px;
         }
-        #score {
+
+        #current-score {
+            font-size: 40px;
+            font-weight: bold;
+            color: #00ff99;
+        }
+
+        #goal-score {
             font-size: 20px;
-            margin-top: 10px;
-            text-shadow: 0 0 10px #00ff99;
+            color: #ffffff;
         }
+
+        canvas {
+            background: #1e1e1e;
+            margin-top: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
         .controls {
             display: flex;
-            justify-content: center;
-            margin-top: 10px;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
         }
-        .btn {
-            background: #005f40;
-            color: white;
+
+        .control-btn {
+            background: #292929;
+            width: 70px;
+            height: 70px;
             border: none;
-            padding: 15px;
             margin: 5px;
-            font-size: 20px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            border-radius: 5px;
-            box-shadow: 0 0 10px #00ff99;
+            transition: 0.1s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
-        .btn:active {
-            background: #008f60;
+
+        .control-btn:active {
+            background: #3d3d3d;
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .control-btn svg {
+            width: 40px;
+            height: 40px;
+            fill: #00ff99;
+        }
+
+        .controls .row {
+            display: flex;
+            justify-content: center;
+        }
+
+        #game-over-screen {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(20, 20, 20, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        #game-over-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        #try-again-btn {
+            background: #00ff99;
+            color: #121212;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        #try-again-btn:hover {
+            background: #00cc77;
         }
     </style>
 </head>
 <body>
-    <h1 style="text-shadow: 0 0 10px #00ff99;">Cyber Snake 🐍</h1>
-    <canvas id="gameCanvas"></canvas>
-    <p id="score">Score 0 to get TOP</p>
 
-    <!-- Управление (для мобильных устройств) -->
-    <div class="controls">
-        <button class="btn" onclick="changeDirection(38)">⬆️</button>
+    <div id="score-container">
+        <div id="current-score">0</div>
+        <div id="goal-score">Score 10 to get TOP</div>
     </div>
+
+    <canvas id="gameCanvas"></canvas>
+
     <div class="controls">
-        <button class="btn" onclick="changeDirection(37)">⬅️</button>
-        <button class="btn" onclick="changeDirection(40)">⬇️</button>
-        <button class="btn" onclick="changeDirection(39)">➡️</button>
+        <div class="row">
+            <button class="control-btn" onclick="changeDirection(38)">
+                <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
+            </button>
+        </div>
+        <div class="row">
+            <button class="control-btn" onclick="changeDirection(37)">
+                <svg viewBox="0 0 24 24"><path d="M4 12l8 8v-6h8v-4h-8v-6z"/></svg>
+            </button>
+            <button class="control-btn" onclick="changeDirection(40)">
+                <svg viewBox="0 0 24 24"><path d="M12 20l8-8h-6v-8h-4v8h-6z"/></svg>
+            </button>
+            <button class="control-btn" onclick="changeDirection(39)">
+                <svg viewBox="0 0 24 24"><path d="M20 12l-8-8v6h-8v4h8v6z"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <div id="game-over-screen">
+        <p id="game-over-text">Игра окончена!<br>Вы заработали <span id="final-score">0</span> TOP</p>
+        <button id="try-again-btn" onclick="restartGame()">Играть снова</button>
     </div>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
+        const scoreElement = document.getElementById("current-score");
+        const gameOverScreen = document.getElementById("game-over-screen");
+        const finalScoreElement = document.getElementById("final-score");
 
-        // Размер игрового поля адаптивный
         const tileSize = 20;
-        canvas.width = Math.min(window.innerWidth - 20, 400);
-        canvas.height = Math.min(window.innerHeight - 120, 400);
+        canvas.width = 400;
+        canvas.height = 400;
 
         let snake = [{ x: 200, y: 200 }];
         let dx = tileSize, dy = 0;
-        let food = randomFood();
+        let food = generateFood();
         let score = 0;
-        let bestScore = localStorage.getItem("bestScore") || 0;
-        let speed = 150; // Начальная скорость
         let gameRunning = true;
 
         document.addEventListener("keydown", (event) => changeDirection(event.keyCode));
 
         function gameLoop() {
             if (!gameRunning) return;
+            updateGame();
+            draw();
+            setTimeout(gameLoop, 150);
+        }
 
+        function updateGame() {
             let head = { x: snake[0].x + dx, y: snake[0].y + dy };
 
             if (head.x < 0 || head.y < 0 || head.x >= canvas.width || head.y >= canvas.height || isCollision(head)) {
-                gameOver();
+                gameRunning = false;
+                showGameOver();
                 return;
             }
 
             snake.unshift(head);
+
             if (head.x === food.x && head.y === food.y) {
                 score++;
-                document.getElementById("score").textContent = `Score ${score} to get TOP`;
-                food = randomFood();
-                speed = Math.max(speed - 5, 50); // Ускорение игры
-                playSound("eat");
+                scoreElement.textContent = score;
+                food = generateFood();
             } else {
                 snake.pop();
             }
-
-            draw();
-            setTimeout(gameLoop, speed);
         }
 
         function draw() {
-            ctx.fillStyle = "#02110d";
+            ctx.fillStyle = "#1e1e1e";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = "#00ff99";
-            snake.forEach(part => ctx.fillRect(part.x, part.y, tileSize, tileSize));
+            snake.forEach((part, index) => {
+                let opacity = 1 - (index / snake.length) * 0.6;
+                ctx.fillStyle = `rgba(0, 255, 153, ${opacity})`;
+                ctx.fillRect(part.x, part.y, tileSize, tileSize);
+            });
 
             ctx.fillStyle = "#ff00ff";
-            ctx.fillRect(food.x, food.y, tileSize, tileSize);
+            ctx.beginPath();
+            ctx.arc(food.x + tileSize / 2, food.y + tileSize / 2, tileSize / 2, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         function changeDirection(keyCode) {
@@ -122,7 +216,16 @@
             if (keyCode === 40 && dy === 0) { dx = 0; dy = tileSize; }
         }
 
-        function randomFood() {
+        function showGameOver() {
+            finalScoreElement.textContent = score;
+            gameOverScreen.style.display = "block";
+        }
+
+        function restartGame() {
+            location.reload();
+        }
+
+        function generateFood() {
             return {
                 x: Math.floor(Math.random() * (canvas.width / tileSize)) * tileSize,
                 y: Math.floor(Math.random() * (canvas.height / tileSize)) * tileSize
@@ -131,24 +234,6 @@
 
         function isCollision(head) {
             return snake.some(segment => segment.x === head.x && segment.y === head.y);
-        }
-
-        function gameOver() {
-            gameRunning = false;
-            playSound("gameover");
-            if (score > bestScore) {
-                bestScore = score;
-                localStorage.setItem("bestScore", bestScore);
-            }
-            setTimeout(() => {
-                alert(`Game Over! Your Score: ${score}`);
-                location.reload();
-            }, 500);
-        }
-
-        function playSound(type) {
-            let sound = new Audio(type === "eat" ? "https://www.fesliyanstudios.com/play-mp3/387" : "https://www.fesliyanstudios.com/play-mp3/383");
-            sound.play();
         }
 
         gameLoop();
