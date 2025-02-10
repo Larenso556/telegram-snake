@@ -1,25 +1,28 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Змейка в Телеграм</title>
+    <title>Cyber Snake</title>
     <style>
         body {
             text-align: center;
-            font-family: Arial, sans-serif;
-            background: #282c34;
-            color: white;
+            font-family: 'Courier New', monospace;
+            background: #0a0f0d;
+            color: #00ff99;
             overflow: hidden;
         }
         canvas {
-            background: black;
+            background: #02110d;
             display: block;
             margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 15px #00ff99;
         }
         #score {
             font-size: 20px;
             margin-top: 10px;
+            text-shadow: 0 0 10px #00ff99;
         }
         .controls {
             display: flex;
@@ -27,26 +30,27 @@
             margin-top: 10px;
         }
         .btn {
-            background: #444;
+            background: #005f40;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 15px;
             margin: 5px;
             font-size: 20px;
             cursor: pointer;
             border-radius: 5px;
+            box-shadow: 0 0 10px #00ff99;
         }
         .btn:active {
-            background: #666;
+            background: #008f60;
         }
     </style>
 </head>
 <body>
-    <h1>🐍 Змейка в Telegram</h1>
+    <h1 style="text-shadow: 0 0 10px #00ff99;">Cyber Snake 🐍</h1>
     <canvas id="gameCanvas"></canvas>
-    <p id="score">Счёт: 0 | Рекорд: 0</p>
+    <p id="score">Score 0 to get TOP</p>
 
-    <!-- Кнопки управления (для мобильных) -->
+    <!-- Управление (для мобильных устройств) -->
     <div class="controls">
         <button class="btn" onclick="changeDirection(38)">⬆️</button>
     </div>
@@ -60,10 +64,10 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        // Определяем размер для мобильных устройств
+        // Размер игрового поля адаптивный
         const tileSize = 20;
         canvas.width = Math.min(window.innerWidth - 20, 400);
-        canvas.height = Math.min(window.innerHeight - 100, 400);
+        canvas.height = Math.min(window.innerHeight - 120, 400);
 
         let snake = [{ x: 200, y: 200 }];
         let dx = tileSize, dy = 0;
@@ -88,7 +92,7 @@
             snake.unshift(head);
             if (head.x === food.x && head.y === food.y) {
                 score++;
-                document.getElementById("score").textContent = `Счёт: ${score} | Рекорд: ${bestScore}`;
+                document.getElementById("score").textContent = `Score ${score} to get TOP`;
                 food = randomFood();
                 speed = Math.max(speed - 5, 50); // Ускорение игры
                 playSound("eat");
@@ -101,13 +105,13 @@
         }
 
         function draw() {
-            ctx.fillStyle = "black";
+            ctx.fillStyle = "#02110d";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = "lime";
+            ctx.fillStyle = "#00ff99";
             snake.forEach(part => ctx.fillRect(part.x, part.y, tileSize, tileSize));
 
-            ctx.fillStyle = "red";
+            ctx.fillStyle = "#ff00ff";
             ctx.fillRect(food.x, food.y, tileSize, tileSize);
         }
 
@@ -137,7 +141,7 @@
                 localStorage.setItem("bestScore", bestScore);
             }
             setTimeout(() => {
-                alert(`Игра окончена! Ваш счёт: ${score}`);
+                alert(`Game Over! Your Score: ${score}`);
                 location.reload();
             }, 500);
         }
