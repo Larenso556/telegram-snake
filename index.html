@@ -14,31 +14,41 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            height: 100vh;
-            justify-content: center;
+        }
+
+        #score-container {
+            margin-top: 20px;
+        }
+
+        #current-score {
+            font-size: 40px;
+            font-weight: bold;
+            color: #00ff99;
+        }
+
+        #goal-score {
+            font-size: 20px;
+            color: #ffffff;
         }
 
         canvas {
             background: #1e1e1e;
+            margin-top: 20px;
             border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-            max-width: 90vw;
-            max-height: 60vh;
         }
 
         .controls {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 10px;
+            margin-top: 20px;
         }
 
         .control-btn {
             background: #292929;
-            width: 15vw;
-            height: 15vw;
-            max-width: 70px;
-            max-height: 70px;
+            width: 70px;
+            height: 70px;
             border: none;
             margin: 5px;
             border-radius: 15px;
@@ -46,48 +56,115 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-btn:active {
+            background: #3d3d3d;
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.5);
         }
 
         .control-btn svg {
-            width: 8vw;
-            height: 8vw;
-            max-width: 40px;
-            max-height: 40px;
+            width: 40px;
+            height: 40px;
             fill: #00ff99;
+        }
+
+        .controls .row {
+            display: flex;
+            justify-content: center;
+        }
+
+        #game-over-screen {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(20, 20, 20, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        #game-over-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        #try-again-btn {
+            background: #00ff99;
+            color: #121212;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        #try-again-btn:hover {
+            background: #00cc77;
         }
     </style>
 </head>
 <body>
+
+    <div id="score-container">
+        <div id="current-score">0</div>
+        <div id="goal-score">Score 10 to get TOP</div>
+    </div>
+
     <canvas id="gameCanvas"></canvas>
 
     <div class="controls">
-        <div>
-            <button class="control-btn" onclick="changeDirection(38)">▲</button>
+        <div class="row">
+            <button class="control-btn" onclick="changeDirection(38)">
+                <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
+            </button>
         </div>
-        <div>
-            <button class="control-btn" onclick="changeDirection(37)">◀</button>
-            <button class="control-btn" onclick="changeDirection(40)">▼</button>
-            <button class="control-btn" onclick="changeDirection(39)">▶</button>
+        <div class="row">
+            <button class="control-btn" onclick="changeDirection(37)">
+                <svg viewBox="0 0 24 24"><path d="M4 12l8 8v-6h8v-4h-8v-6z"/></svg>
+            </button>
+            <button class="control-btn" onclick="changeDirection(40)">
+                <svg viewBox="0 0 24 24"><path d="M12 20l8-8h-6v-8h-4v8h-6z"/></svg>
+            </button>
+            <button class="control-btn" onclick="changeDirection(39)">
+                <svg viewBox="0 0 24 24"><path d="M20 12l-8-8v6h-8v4h8v6z"/></svg>
+            </button>
         </div>
+    </div>
+
+    <div id="game-over-screen">
+        <p id="game-over-text">Игра окончена!<br>Вы заработали <span id="final-score">0</span> TOP</p>
+        <button id="try-again-btn" onclick="restartGame()">Играть снова</button>
     </div>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-        
-        function resizeCanvas() {
-            canvas.width = Math.min(window.innerWidth * 0.9, 400);
-            canvas.height = Math.min(window.innerHeight * 0.6, 400);
-        }
+        const scoreElement = document.getElementById("current-score");
+        const gameOverScreen = document.getElementById("game-over-screen");
+        const finalScoreElement = document.getElementById("final-score");
 
-        resizeCanvas();
-        window.addEventListener("resize", resizeCanvas);
+        const tileSize = 20;
+        canvas.width = 400;
+        canvas.height = 400;
 
-        let tileSize = canvas.width / 20;
-        let snake = [{ x: tileSize * 10, y: tileSize * 10 }];
+        let snake = [{ x: 200, y: 200 }];
         let dx = tileSize, dy = 0;
         let food = generateFood();
+        let score = 0;
         let gameRunning = true;
+
+        document.addEventListener("keydown", (event) => changeDirection(event.keyCode));
 
         function gameLoop() {
             if (!gameRunning) return;
@@ -101,11 +178,15 @@
 
             if (head.x < 0 || head.y < 0 || head.x >= canvas.width || head.y >= canvas.height || isCollision(head)) {
                 gameRunning = false;
+                showGameOver();
                 return;
             }
 
             snake.unshift(head);
+
             if (head.x === food.x && head.y === food.y) {
+                score++;
+                scoreElement.textContent = score;
                 food = generateFood();
             } else {
                 snake.pop();
@@ -123,7 +204,9 @@
             });
 
             ctx.fillStyle = "#ff00ff";
-            ctx.fillRect(food.x, food.y, tileSize, tileSize);
+            ctx.beginPath();
+            ctx.arc(food.x + tileSize / 2, food.y + tileSize / 2, tileSize / 2, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         function changeDirection(keyCode) {
@@ -131,6 +214,15 @@
             if (keyCode === 38 && dy === 0) { dx = 0; dy = -tileSize; }
             if (keyCode === 39 && dx === 0) { dx = tileSize; dy = 0; }
             if (keyCode === 40 && dy === 0) { dx = 0; dy = tileSize; }
+        }
+
+        function showGameOver() {
+            finalScoreElement.textContent = score;
+            gameOverScreen.style.display = "block";
+        }
+
+        function restartGame() {
+            location.reload();
         }
 
         function generateFood() {
