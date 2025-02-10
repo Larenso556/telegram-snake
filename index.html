@@ -210,6 +210,8 @@
         }
 
         function changeDirection(keyCode) {
+            if (navigator.vibrate) navigator.vibrate(50);
+
             if (keyCode === 37 && dx === 0) { dx = -tileSize; dy = 0; }
             if (keyCode === 38 && dy === 0) { dx = 0; dy = -tileSize; }
             if (keyCode === 39 && dx === 0) { dx = tileSize; dy = 0; }
