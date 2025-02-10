@@ -209,8 +209,14 @@
             ctx.fill();
         }
 
+        function vibrateDevice() {
+            if ("vibrate" in navigator) {
+                navigator.vibrate(100);
+            }
+        }
+
         function changeDirection(keyCode) {
-            if (navigator.vibrate) navigator.vibrate(50);
+            vibrateDevice();
 
             if (keyCode === 37 && dx === 0) { dx = -tileSize; dy = 0; }
             if (keyCode === 38 && dy === 0) { dx = 0; dy = -tileSize; }
