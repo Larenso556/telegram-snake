@@ -5,53 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Змейка</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
             text-align: center;
             font-family: 'Arial', sans-serif;
             background: #121212;
             color: #ffffff;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
             height: 100vh;
-            overflow: hidden;
-        }
-
-        #score-container {
-            margin-top: 10px;
-        }
-
-        #current-score {
-            font-size: 5vh;
-            font-weight: bold;
-            color: #00ff99;
-        }
-
-        #goal-score {
-            font-size: 2vh;
-            color: #ffffff;
-        }
-
-        /* ✅ Делаем CANVAS адаптивным */
-        #canvas-container {
-            display: flex;
             justify-content: center;
-            align-items: center;
-            flex-grow: 1;
-            width: 100%;
         }
 
         canvas {
             background: #1e1e1e;
             border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-            max-width: 95vw;
+            max-width: 90vw;
             max-height: 60vh;
         }
 
@@ -59,8 +30,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 10px;
-            gap: 5px;
+            margin-top: 10px;
         }
 
         .control-btn {
@@ -70,128 +40,54 @@
             max-width: 70px;
             max-height: 70px;
             border: none;
+            margin: 5px;
             border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: 0.1s;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .control-btn:active {
-            background: #3d3d3d;
-            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.5);
         }
 
         .control-btn svg {
-            width: 40%;
-            height: 40%;
+            width: 8vw;
+            height: 8vw;
+            max-width: 40px;
+            max-height: 40px;
             fill: #00ff99;
-        }
-
-        .controls .row {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        #game-over-screen {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(20, 20, 20, 0.95);
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            display: none;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-        }
-
-        #game-over-text {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ffffff;
-        }
-
-        #try-again-btn {
-            background: #00ff99;
-            color: #121212;
-            border: none;
-            padding: 10px 20px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 10px;
-            margin-top: 15px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        #try-again-btn:hover {
-            background: #00cc77;
         }
     </style>
 </head>
 <body>
-
-    <div id="score-container">
-        <div id="current-score">0</div>
-        <div id="goal-score">Score 10 to get TOP</div>
-    </div>
-
-    <div id="canvas-container">
-        <canvas id="gameCanvas"></canvas>
-    </div>
+    <canvas id="gameCanvas"></canvas>
 
     <div class="controls">
-        <div class="row">
-            <button class="control-btn" onclick="changeDirection(38)">
-                <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
-            </button>
+        <div>
+            <button class="control-btn" onclick="changeDirection(38)">▲</button>
         </div>
-        <div class="row">
-            <button class="control-btn" onclick="changeDirection(37)">
-                <svg viewBox="0 0 24 24"><path d="M4 12l8 8v-6h8v-4h-8v-6z"/></svg>
-            </button>
-            <button class="control-btn" onclick="changeDirection(40)">
-                <svg viewBox="0 0 24 24"><path d="M12 20l8-8h-6v-8h-4v8h-6z"/></svg>
-            </button>
-            <button class="control-btn" onclick="changeDirection(39)">
-                <svg viewBox="0 0 24 24"><path d="M20 12l-8-8v6h-8v4h8v6z"/></svg>
-            </button>
+        <div>
+            <button class="control-btn" onclick="changeDirection(37)">◀</button>
+            <button class="control-btn" onclick="changeDirection(40)">▼</button>
+            <button class="control-btn" onclick="changeDirection(39)">▶</button>
         </div>
-    </div>
-
-    <div id="game-over-screen">
-        <p id="game-over-text">Игра окончена!<br>Вы заработали <span id="final-score">0</span> TOP</p>
-        <button id="try-again-btn" onclick="restartGame()">Играть снова</button>
     </div>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-        const scoreElement = document.getElementById("current-score");
-        const gameOverScreen = document.getElementById("game-over-screen");
-        const finalScoreElement = document.getElementById("final-score");
-
+        
         function resizeCanvas() {
-            const size = Math.min(window.innerWidth * 0.95, window.innerHeight * 0.6);
-            canvas.width = size;
-            canvas.height = size;
+            canvas.width = Math.min(window.innerWidth * 0.9, 400);
+            canvas.height = Math.min(window.innerHeight * 0.6, 400);
         }
 
-        window.addEventListener("resize", resizeCanvas);
         resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
 
-        let snake = [{ x: canvas.width / 2, y: canvas.height / 2 }];
-        let dx = 20, dy = 0;
+        let tileSize = canvas.width / 20;
+        let snake = [{ x: tileSize * 10, y: tileSize * 10 }];
+        let dx = tileSize, dy = 0;
         let food = generateFood();
-        let score = 0;
         let gameRunning = true;
-
-        document.addEventListener("keydown", (event) => changeDirection(event.keyCode));
 
         function gameLoop() {
             if (!gameRunning) return;
@@ -205,15 +101,11 @@
 
             if (head.x < 0 || head.y < 0 || head.x >= canvas.width || head.y >= canvas.height || isCollision(head)) {
                 gameRunning = false;
-                showGameOver();
                 return;
             }
 
             snake.unshift(head);
-
             if (head.x === food.x && head.y === food.y) {
-                score++;
-                scoreElement.textContent = score;
                 food = generateFood();
             } else {
                 snake.pop();
@@ -223,13 +115,33 @@
         function draw() {
             ctx.fillStyle = "#1e1e1e";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            snake.forEach((part, index) => {
+                let opacity = 1 - (index / snake.length) * 0.6;
+                ctx.fillStyle = `rgba(0, 255, 153, ${opacity})`;
+                ctx.fillRect(part.x, part.y, tileSize, tileSize);
+            });
+
+            ctx.fillStyle = "#ff00ff";
+            ctx.fillRect(food.x, food.y, tileSize, tileSize);
         }
 
         function changeDirection(keyCode) {
-            if (keyCode === 37 && dx === 0) { dx = -20; dy = 0; }
-            if (keyCode === 38 && dy === 0) { dx = 0; dy = -20; }
-            if (keyCode === 39 && dx === 0) { dx = 20; dy = 0; }
-            if (keyCode === 40 && dy === 0) { dx = 0; dy = 20; }
+            if (keyCode === 37 && dx === 0) { dx = -tileSize; dy = 0; }
+            if (keyCode === 38 && dy === 0) { dx = 0; dy = -tileSize; }
+            if (keyCode === 39 && dx === 0) { dx = tileSize; dy = 0; }
+            if (keyCode === 40 && dy === 0) { dx = 0; dy = tileSize; }
+        }
+
+        function generateFood() {
+            return {
+                x: Math.floor(Math.random() * (canvas.width / tileSize)) * tileSize,
+                y: Math.floor(Math.random() * (canvas.height / tileSize)) * tileSize
+            };
+        }
+
+        function isCollision(head) {
+            return snake.some(segment => segment.x === head.x && segment.y === head.y);
         }
 
         gameLoop();
